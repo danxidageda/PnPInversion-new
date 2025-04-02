@@ -546,9 +546,12 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     mean_clip_score = 0
+    mean_clip_v_score = 0
     mean_mse_score = 0
     mean_psnr_score = 0
     mean_lpips_score = 0
+    mean_ssim_score = 0
+    mean_dino_score = 0
     count = 0
     for img_float32, image_path, source_prompt, target_prompt in dataloader:
         original_prompt = source_prompt[0]
@@ -602,8 +605,12 @@ def main(args):
             # clip score
             img_float32 = img_float32.to(device)
             clip_score = metrics.clip_scores(out_latent_float32, target_prompt)
-            print(f"==> clip score: {clip_score:.4f}")
+            print(f"==> clip-T score: {clip_score:.4f}")
             mean_clip_score += clip_score
+            # clip v score`````````
+            clip_v_score = metrics.clip_scores(img_float32, out_latent_float32)
+            print(f"==> clip-I score: {clip_v_score:.4f}")
+            mean_clip_v_score += clip_v_score
             # mse score
             mse_score = metrics.mse_scores(img_float32, out_latent_float32)
             print(f"==> mse score: {mse_score:.4f}")
@@ -616,17 +623,30 @@ def main(args):
             lpips_score = metrics.lpips_scores(img_float32, out_latent_float32)
             print(f"==> lpips score: {lpips_score:.4f}")
             mean_lpips_score += lpips_score
-            count += 1
+            # ssim score
+            ssim_score = metrics.ssim_scores(img_float32, out_latent_float32)
+            print(f"==> ssim score: {ssim_score:.4f}")
+            mean_ssim_score += ssim_score
+            # dino score
+            dino_score = metrics.dino_scores(img_float32, out_latent_float32)
+            print(f"==> dino score: {dino_score:.4f}")
+            mean_dino_score += dino_score
 
     print('######### Evaluation Results ###########')
     mean_clip_score = mean_clip_score / count
-    print(f"==> clip score: {mean_clip_score:.4f}")
+    print(f"==> clip-T score: {mean_clip_score:.4f}")
+    mean_clip_v_score = mean_clip_v_score / count
+    print(f"==> clip-I score: {mean_clip_v_score:.4f}")
     mean_mse_score = mean_mse_score / count
     print(f"==> mse score: {mean_mse_score:.4f}")
     mean_psnr_score = mean_psnr_score / count
     print(f"==> psnr score: {mean_psnr_score:.4f}")
     mean_lpips_score = mean_lpips_score / count
     print(f"==> lpips score: {mean_lpips_score:.4f}")
+    mean_ssim_score = mean_ssim_score / count
+    print(f"==> ssim score: {mean_ssim_score:.4f}")
+    mean_dino_score = mean_dino_score / count
+    print(f"==> dino score: {mean_dino_score:.4f}")
     print('#######################################')
 
 
@@ -644,11 +664,11 @@ if __name__ == "__main__":
     parser.add_argument('--edit_category_list', nargs = '+', type=str, default=["0","1","2","3","4","5","6","7","8","9"]) # the editing category that needed to run
     # parser.add_argument('--eddatasetsit_method_list', nargs = '+', type=str, default=["ddim+masactrl","directinversion+masactrl"]) # the editing methods that needed to run
     parser.add_argument('--edit_method_list', nargs='+', type=str,default=["ddim+pnp"])  # the editing methods that needed to run
-    parser.add_argument('--height', type=int, default=576,
+    parser.add_argument('--height', type=int, default=512,
                         help='输出图像的高度')
-    parser.add_argument('--width', type=int, default=576,
+    parser.add_argument('--width', type=int, default=512,
                         help='输出图像的宽度')
-
+###
 
     args = parser.parse_args()
     main(args)

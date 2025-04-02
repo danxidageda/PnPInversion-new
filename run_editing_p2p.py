@@ -93,9 +93,12 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     mean_clip_score = 0
+    mean_clip_v_score = 0
     mean_mse_score = 0
     mean_psnr_score = 0
     mean_lpips_score = 0
+    mean_ssim_score = 0
+    mean_dino_score = 0
     count = 0
     for img_float32, image_path, source_prompt, target_prompt in dataloader:
         original_prompt = source_prompt[0]
@@ -143,13 +146,13 @@ def main(args):
                                       recon_lr=1,
                                       recon_t=400,
                                       )
-            base, ext = os.path.splitext(output_path)
-            counter = 1
-            while os.path.exists(output_path):
-                output_path = f"{base}_{counter}{ext}"
-                counter += 1
-            edited_image.save(output_path)
-            print(f"finish")
+        base, ext = os.path.splitext(output_path)
+        counter = 1
+        while os.path.exists(output_path):
+            output_path = f"{base}_{counter}{ext}"
+            counter += 1
+        edited_image.save(output_path)
+        print(f"finish")
         out_latent_float32 = transforms.Compose(
             [
                 transforms.Resize((args.height, args.width), interpolation=transforms.InterpolationMode.BILINEAR),
@@ -160,33 +163,51 @@ def main(args):
         # evaluation  img, out均为[-1,1]
         # clip score
         img_float32 = img_float32.to(device)
-        clip_score = metrics.clip_scores(out_latent_float32, target_prompt)
-        print(f"==> clip score: {clip_score:.4f}")
+        clip_score = metrics.clip_scores( out_latent_float32,target_prompt)
+        print(f"==> clip-T score: {clip_score:.4f}")
         mean_clip_score += clip_score
+        # clip v score`````````
+        clip_v_score = metrics.clip_scores( img_float32,out_latent_float32)
+        print(f"==> clip-I score: {clip_v_score:.4f}")
+        mean_clip_v_score += clip_v_score
         # mse score
         mse_score = metrics.mse_scores(img_float32, out_latent_float32)
         print(f"==> mse score: {mse_score:.4f}")
         mean_mse_score += mse_score
-        # psnr score
+        #psnr score
         psnr_score = metrics.psnr_scores(img_float32, out_latent_float32)
         print(f"==> psnr score: {psnr_score:.4f}")
         mean_psnr_score += psnr_score
-        # lpips score
+        #lpips score
         lpips_score = metrics.lpips_scores(img_float32, out_latent_float32)
         print(f"==> lpips score: {lpips_score:.4f}")
         mean_lpips_score += lpips_score
-        count += 1
+        #ssim score
+        ssim_score = metrics.ssim_scores(img_float32, out_latent_float32)
+        print(f"==> ssim score: {ssim_score:.4f}")
+        mean_ssim_score += ssim_score
+        #dino score
+        dino_score = metrics.dino_scores(img_float32, out_latent_float32)
+        print(f"==> dino score: {dino_score:.4f}")
+        mean_dino_score += dino_score
 
     print('######### Evaluation Results ###########')
     mean_clip_score = mean_clip_score / count
-    print(f"==> clip score: {mean_clip_score:.4f}")
+    print(f"==> clip-T score: {mean_clip_score:.4f}")
+    mean_clip_v_score = mean_clip_v_score / count
+    print(f"==> clip-I score: {mean_clip_v_score:.4f}")
     mean_mse_score = mean_mse_score / count
     print(f"==> mse score: {mean_mse_score:.4f}")
     mean_psnr_score = mean_psnr_score / count
     print(f"==> psnr score: {mean_psnr_score:.4f}")
     mean_lpips_score = mean_lpips_score / count
     print(f"==> lpips score: {mean_lpips_score:.4f}")
+    mean_ssim_score = mean_ssim_score / count
+    print(f"==> ssim score: {mean_ssim_score:.4f}")
+    mean_dino_score = mean_dino_score / count
+    print(f"==> dino score: {mean_dino_score:.4f}")
     print('#######################################')
+
 
 
 

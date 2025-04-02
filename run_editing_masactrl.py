@@ -181,7 +181,8 @@ image_save_paths={
 def main(args):
 
 
-
+    import torchmetrics
+    print(torchmetrics.__version__)
     if args.dtype == 'bfloat16':
         DTYPE = torch.bfloat16
     elif args.dtype == 'float16':
@@ -233,9 +234,12 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     mean_clip_score = 0
+    mean_clip_v_score = 0
     mean_mse_score = 0
     mean_psnr_score = 0
     mean_lpips_score = 0
+    mean_ssim_score = 0
+    mean_dino_score = 0
     count = 0
     for img_float32, image_path, source_prompt, target_prompt in dataloader:
         original_prompt = source_prompt[0]
@@ -257,13 +261,13 @@ def main(args):
                                            step=4,
                                            layper=10
                                            )
-            base, ext = os.path.splitext(output_path)
-            counter = 1
-            while os.path.exists(output_path):
-                output_path = f"{base}_{counter}{ext}"
-                counter += 1
-            edited_image.save(output_path)
-            print(f"finish")
+        base, ext = os.path.splitext(output_path)
+        counter = 1
+        while os.path.exists(output_path):
+            output_path = f"{base}_{counter}{ext}"
+            counter += 1
+        edited_image.save(output_path)
+        print(f"finish")
         out_latent_float32=transforms.Compose(
                     [
                     transforms.Resize((args.height, args.width), interpolation=transforms.InterpolationMode.BILINEAR),
@@ -271,12 +275,17 @@ def main(args):
                     transforms.Normalize([0.5], [0.5])
                     ]
                     )(edited_image).unsqueeze(0).to(device)
+
         # evaluation  img, out均为[-1,1]
         # clip score
         img_float32 = img_float32.to(device)
-        clip_score = metrics.clip_scores( out_latent_float32,target_prompt)
-        print(f"==> clip score: {clip_score:.4f}")
+        clip_score = metrics.clip_scores(out_latent_float32,target_prompt)
+        print(f"==> clip-T score: {clip_score:.4f}")
         mean_clip_score += clip_score
+        # clip v score`````````
+        clip_v_score = metrics.clip_scores(img_float32,out_latent_float32)
+        print(f"==> clip-I score: {clip_v_score:.4f}")
+        mean_clip_v_score += clip_v_score
         # mse score
         mse_score = metrics.mse_scores(img_float32, out_latent_float32)
         print(f"==> mse score: {mse_score:.4f}")
@@ -289,18 +298,31 @@ def main(args):
         lpips_score = metrics.lpips_scores(img_float32, out_latent_float32)
         print(f"==> lpips score: {lpips_score:.4f}")
         mean_lpips_score += lpips_score
-        count += 1
+        #ssim score
+        ssim_score = metrics.ssim_scores(img_float32, out_latent_float32)
+        print(f"==> ssim score: {ssim_score:.4f}")
+        mean_ssim_score += ssim_score
+        #dino score
+        dino_score = metrics.dino_scores(img_float32, out_latent_float32)
+        print(f"==> dino score: {dino_score:.4f}")
+        mean_dino_score += dino_score
 
 
     print('######### Evaluation Results ###########')
     mean_clip_score = mean_clip_score / count
-    print(f"==> clip score: {mean_clip_score:.4f}")
+    print(f"==> clip-T score: {mean_clip_score:.4f}")
+    mean_clip_v_score = mean_clip_v_score / count
+    print(f"==> clip-I score: {mean_clip_v_score:.4f}")
     mean_mse_score = mean_mse_score / count
     print(f"==> mse score: {mean_mse_score:.4f}")
     mean_psnr_score = mean_psnr_score / count
     print(f"==> psnr score: {mean_psnr_score:.4f}")
     mean_lpips_score = mean_lpips_score / count
     print(f"==> lpips score: {mean_lpips_score:.4f}")
+    mean_ssim_score = mean_ssim_score / count
+    print(f"==> ssim score: {mean_ssim_score:.4f}")
+    mean_dino_score = mean_dino_score / count
+    print(f"==> dino score: {mean_dino_score:.4f}")
     print('#######################################')
 
 if __name__ == "__main__":
@@ -311,7 +333,7 @@ if __name__ == "__main__":
     parser.add_argument('--rerun_exist_images', action= "store_true") # rerun existing images
     parser.add_argument('--model_path', type=str, default='/data/lyw/stable-diffusion-v1-4', help='预训练模型的路径')
     parser.add_argument('--output_dir', type=str, default="masa_outputs") # the editing category that needed to run
-    parser.add_argument('--eval-datasets', type=str, default='EditEval_v1', help='选择要编辑的数据集：EditEval_v1, PIE-Bench')
+    parser.add_argument('--eval-datasets', type=str, default='PIE-Bench', help='选择要编辑的数据集：EditEval_v1, PIE-Bench')
     parser.add_argument('--num-steps', type=int, default=30, help='时间步长的数量')
     parser.add_argument('--guidance_scale', type=float, default=7.5, help='interpolated_denoise 的引导比例')
     parser.add_argument('--dtype', type=str, default='bfloat16', choices=['float16', 'bfloat16', 'float32'],
@@ -319,11 +341,10 @@ if __name__ == "__main__":
     parser.add_argument('--edit_category_list', nargs = '+', type=str, default=["0","1","2","3","4","5","6","7","8","9"]) # the editing category that needed to run
     # parser.add_argument('--eddatasetsit_method_list', nargs = '+', type=str, default=["ddim+masactrl","directinversion+masactrl"]) # the editing methods that needed to run
     parser.add_argument('--edit_method_list', nargs='+', type=str,default=["ddim+masactrl"])  # the editing methods that needed to run
-    parser.add_argument('--height', type=int, default=576,
+    parser.add_argument('--height', type=int, default=512,
                         help='输出图像的高度')
-    parser.add_argument('--width', type=int, default=576,
+    parser.add_argument('--width', type=int, default=512,
                         help='输出图像的宽度')
-
 
     args = parser.parse_args()
     main(args)
