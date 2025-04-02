@@ -489,7 +489,7 @@ image_save_paths={
 
 def main(args):
 
-    model_key = "/data/lyw/stable-diffusion-v1-4"
+    model_key = args.model_path
     toy_scheduler = DDIMScheduler.from_pretrained(model_key, subfolder="scheduler")
     toy_scheduler.set_timesteps(args.num_steps)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
