@@ -1,0 +1,16 @@
+accelerate==1.0.1
+diffusers==0.10.0
+huggingface-hub==0.25.0
+matplotlib==3.7.5
+matplotlib-inline==0.1.7
+numpy
+opencv-python==4.10.0.84
+openpyxl==3.1.5
+pandas
+pillow==10.4.0
+torch==2.2.0
+torchaudio==2.2.0
+torchmetrics==1.5.2
+torchvision==0.17.0
+tornado==6.4.1
+transformers==4.46.2
