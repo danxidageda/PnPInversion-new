@@ -14,16 +14,16 @@ This is important!!! Since different models have different python environmnet re
 
 - p2p_requirements.txt: for models in `run_editing_p2p.py`
 
-    环境参考 `python==3.8.20` `environment/p2p_requirements.txt`
+    环境参考 `python==3.10.0` `environment/p2p_requirements.txt`
 - masactrl_requirements.txt: for models in `run_editing_masactrl.py`
-    环境参考 `python==3.8.13` `environment/masactrl_requirements.txt`
+    环境参考 `python==3.10.0` `environment/masactrl_requirements.txt`
 - pnp_requirements.txt: for models in `run_editing_pnp.py`
     环境参考 `python==3.9.20` `environment/pnp_requirements.txt`
 
 For example, if you want to use the models in `run_editing_p2p.py`, you need to install the environment as follows:
 
 ```shell
-conda create -n p2p python=3.8.20 -y
+conda create -n p2p python=3.10.0 -y
 conda activate p2p
 pip install -r environment/p2p_requirements.txt
 ```
