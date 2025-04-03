@@ -21,7 +21,7 @@ This is important!!! Since different models have different python environmnet re
     环境参考 `python==3.9.20` `environment/pnp_requirements.txt`
 
 
-#### 使用torchmetrics==1.6.3，无坑 
+#### 由于添加CLIP-I分数，要求torchmetrics>=1.6.3，无坑 
 For example, if you want to use the models in `run_editing_p2p.py`, you need to install the environment as follows:
 
 ```shell
