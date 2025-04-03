@@ -668,7 +668,6 @@ if __name__ == "__main__":
                         help='输出图像的高度')
     parser.add_argument('--width', type=int, default=512,
                         help='输出图像的宽度')
-###
 
     args = parser.parse_args()
     main(args)

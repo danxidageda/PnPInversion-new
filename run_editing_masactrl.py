@@ -333,7 +333,7 @@ if __name__ == "__main__":
     parser.add_argument('--rerun_exist_images', action= "store_true") # rerun existing images
     parser.add_argument('--model_path', type=str, default='/data/lyw/stable-diffusion-v1-4', help='预训练模型的路径')
     parser.add_argument('--output_dir', type=str, default="masa_outputs") # the editing category that needed to run
-    parser.add_argument('--eval-datasets', type=str, default='PIE-Bench', help='选择要编辑的数据集：EditEval_v1, PIE-Bench')
+    parser.add_argument('--eval-datasets', type=str, default='EditEval_v1', help='选择要编辑的数据集：EditEval_v1, PIE-Bench')
     parser.add_argument('--num-steps', type=int, default=30, help='时间步长的数量')
     parser.add_argument('--guidance_scale', type=float, default=7.5, help='interpolated_denoise 的引导比例')
     parser.add_argument('--dtype', type=str, default='bfloat16', choices=['float16', 'bfloat16', 'float32'],
