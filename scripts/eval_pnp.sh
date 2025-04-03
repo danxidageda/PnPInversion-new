@@ -5,5 +5,5 @@ python run_editing_pnp.py \
 	--width 512 \
 	--num-step 30 \
   --guidance 7.5 \
-  --output_dir output \
+  --output_dir pnp_output \
 

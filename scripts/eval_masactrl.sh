@@ -5,6 +5,6 @@ python run_editing_masactrl.py \
 	--width 512 \
 	--num-step 30 \
   --guidance 7.5 \
-  --output_dir output \
+  --output_dir masa_output \
 
 
