@@ -306,7 +306,7 @@ def main(args):
         dino_score = metrics.dino_scores(img_float32, out_latent_float32)
         print(f"==> dino score: {dino_score:.4f}")
         mean_dino_score += dino_score
-
+        count+=1
 
     print('######### Evaluation Results ###########')
     mean_clip_score = mean_clip_score / count
